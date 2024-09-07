@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
@@ -30,6 +31,12 @@ def get_text_chunks(text):
 def get_vectorstore(text_chunks):
     embedding = OpenAIEmbeddings()
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embedding)
+    vectorstore.save_local("faiss.db")
+    return vectorstore
+
+def load_vectorstore(path):
+    embeddings = OpenAIEmbeddings()
+    vectorstore = FAISS.load_local(path, embeddings, allow_dangerous_deserialization=True)
     return vectorstore
 
 def get_conversation_chain(vectorstore):
@@ -63,6 +70,10 @@ def main():
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
+
+    if os.path.isdir("faiss.db"):
+        vectorstore = load_vectorstore("faiss.db")
+        st.session_state.conversation = get_conversation_chain(vectorstore)
 
     st.header("Chat with multiple PDFs :books:")
     user_question = st.text_input("Ask a question about your documents:")
