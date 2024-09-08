@@ -67,13 +67,12 @@ def main():
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
+        if os.path.isdir("faiss.db"):
+            vectorstore = load_vectorstore("faiss.db")
+            st.session_state.conversation = get_conversation_chain(vectorstore)
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
-
-    if os.path.isdir("faiss.db"):
-        vectorstore = load_vectorstore("faiss.db")
-        st.session_state.conversation = get_conversation_chain(vectorstore)
 
     st.header("Chat with multiple PDFs :books:")
     user_question = st.text_input("Ask a question about your documents:")
